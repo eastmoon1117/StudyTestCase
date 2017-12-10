@@ -11,7 +11,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.item_test_constaint_layout);
+        setContentView(R.layout.item_test_relative_layout);
 //        setContentView(R.layout.activity_main);
 //        viewStub = (ViewStub) findViewById(R.id.vs_test);
 //        findViewById(R.id.btn_view_show).setOnClickListener(new View.OnClickListener() {
