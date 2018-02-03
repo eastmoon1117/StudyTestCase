@@ -9,33 +9,34 @@ import com.jared.daemon.Daemon;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
+    private TextView tv;
+    NdkJniUtils jniUtils = new NdkJniUtils();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        jniUtils.nativeInit();
+        jniUtils.nativeClassInit();
+        jniUtils.startThread();
+
         // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI() + ":" + sum(3, 3));
+        tv = (TextView) findViewById(R.id.sample_text);
+        tv.setText(jniUtils.stringFromJNI() + ":" + jniUtils.sumFromJNI(4, 3));
 
         findViewById(R.id.start_daemon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Daemon.run(getApplication(), "");
+                //tv.setText(jniUtils.stringFromJNI() + ":" + jniUtils.sumFromJNI(4, 3));
             }
         });
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
-
-    public native int sum(int a, int b);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        jniUtils.nativeCleanup();
+    }
 }
