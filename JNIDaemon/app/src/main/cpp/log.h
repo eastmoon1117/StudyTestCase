@@ -1,16 +1,18 @@
-//
-// Created by huaixi on 2018/1/27.
-//
+/**
+ * The macro for log.
+ */
 
-#ifndef JNIDAEMON_LOG_H
-#define JNIDAEMON_LOG_H
+#include <jni.h>
 #include <android/log.h>
 
-#define TAG "myDemo-jni" // 这个是自定义的LOG的标识
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG ,__VA_ARGS__) // 定义LOGD类型
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG ,__VA_ARGS__) // 定义LOGI类型
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__) // 定义LOGW类型
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG ,__VA_ARGS__) // 定义LOGE类型
-#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, TAG ,__VA_ARGS__) // 定义LOGF类型
+#define TAG		"Native"
 
-#endif //JNIDAEMON_LOG_H
+#define LOG_I(...)	__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
+#define LOG_D(...)	__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
+#define LOG_W(...)	__android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__)
+#define	LOG_E(...)	__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
+#define LOGI(tag, ...)	__android_log_print(ANDROID_LOG_INFO, tag, __VA_ARGS__)
+#define LOGD(tag, ...)	__android_log_print(ANDROID_LOG_DEBUG, tag, __VA_ARGS__)
+#define LOGW(tag, ...)	__android_log_print(ANDROID_LOG_WARN, tag, __VA_ARGS__)
+#define	LOGE(tag, ...)	__android_log_print(ANDROID_LOG_ERROR, tag, __VA_ARGS__)
