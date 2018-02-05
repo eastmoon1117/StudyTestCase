@@ -6,13 +6,15 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-//#include <cutils/sockets.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "hello.h"
+#include <sys/un.h>
+
+#include "Hello.h"
 #include "log.h"
 
-#define PATH "com.jared.jnidaemon.localsocket"
+#define PATH "/data/data/com.jared.jnidaemon/app_socket/localsocket"
+//#define PATH "/data/local/tmp/localsocket"
 
 JavaVM *g_jvm;
 pthread_t pt;
@@ -111,42 +113,32 @@ void cleanup(JNIEnv *env) {
     }
 }
 
-//int socket() {
-//    int socketID;
-//
-//    int ret;
-//    int i = 0;
-//    int len = 0;
-//    char buffer[20];
-//
-//    strcpy(buffer, "HELLO Socket");
-//
-//    socketID = socket_local_client(PATH, ANDROID_SOCKET_NAMESPACE_ABSTRACT, SOCK_STREAM);
-//    if (socketID < 0) {
-//        return socketID;
-//    }
-//    ret = write(socketID, buffer, strlen(buffer));
-//    if(ret < 0){
-//        LOG_E("send failed");
-//        return ret;
-//    }
-//
-////    char buf2[512] = {0};
-////    ret = read(socketID,buf2,sizeof(buf2));
-////    if(ret < 0){
-////        LOG_E("recived failed");
-////        return ret;
-////    }else{
-////        LOG_E("c client recived from server: %s",buf2);
-////    }
-//
-//    ret = close(socketID);
-//    if (ret < 0) {
-//        return ret;
-//    }
-//
-//    return 0;
-//}
+int socket() {
+    //creat unix socket
+    int connect_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (connect_fd < 0) {
+        LOG_D("cannot create communication socket");
+        return 1;
+    }
+    struct sockaddr_un address;
+    address.sun_family = AF_UNIX;
+    strcpy(address.sun_path, PATH);
+    //connect server
+    int ret = connect(connect_fd, (struct sockaddr*) &address, sizeof(address));
+    if (ret == -1) {
+        LOG_D("cannot connect to the server");
+        close(connect_fd);
+        return 1;
+    }
+    char snd_buf[1024];
+    memset(snd_buf, 0, 1024);
+    strcpy(snd_buf, "message from client");
+    //send info server
+    for (int i = 0; i < 4; i++)
+        write(connect_fd, snd_buf, sizeof(snd_buf));
+    close(connect_fd);
+    return 0;
+}
 
 void *runMethod(void *args) {
 
@@ -165,7 +157,7 @@ void *runMethod(void *args) {
         if (EXIT_THREAD != 0) break;
         sleep(3);
         callback(6);
-        //socket();
+        socket();
     }
 
     //Detach主线程

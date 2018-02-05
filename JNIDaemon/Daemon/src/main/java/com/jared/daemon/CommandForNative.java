@@ -33,7 +33,7 @@ public class CommandForNative {
                 Log.d(TAG, "chmod " + mode + " " + absPath);
             Runtime.getRuntime().exec("chmod " + mode + " " + absPath).waitFor();
         } catch (Exception e) {
-            Log.e(TAG, "installBinary failed: " + e.getMessage());
+            Log.e(TAG, "chmodFile failed: " + e.getMessage());
         }
     }
 
@@ -112,6 +112,32 @@ public class CommandForNative {
         }
 
         return binaryDir;
+    }
+
+    public static boolean createFile(Context context, String destDir, String filename) {
+        File file;
+        try {
+            file = new File(context.getDir(destDir, Context.MODE_PRIVATE), filename);
+            if (file.exists()) {
+                Log.d(TAG, "file has existed");
+                return false;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "create failed: " + e.getMessage());
+            return false;
+        }
+
+        String filePath  = file.getAbsolutePath();
+        if (CMD_DEBUG)
+            Log.e(TAG, "file path: " + filePath);
+
+        /**
+         * 设置权限
+         */
+        if (filePath == null) return false;
+
+        chmodFile(filePath, 755);
+        return true;
     }
 
     /**

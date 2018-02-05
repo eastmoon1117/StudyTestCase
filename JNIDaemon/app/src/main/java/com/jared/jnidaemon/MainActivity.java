@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.start_daemon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Daemon.createSocketFile(getApplication());
                 Daemon.run(getApplication(), "");
                 //tv.setText(jniUtils.stringFromJNI() + ":" + jniUtils.sumFromJNI(4, 3));
             }

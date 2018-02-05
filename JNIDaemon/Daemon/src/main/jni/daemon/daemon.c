@@ -15,56 +15,54 @@
 
 #define LOG_TAG         "Daemon"
 #define MAXLINE 1024
-#define PATH "com.jared.jnidaemon.localsocket"
+//创建的localsocket的绝对路径
+#define PATH "/data/data/com.jared.jnidaemon/app_socket/localsocket"
+//#define PATH "/data/local/tmp/localsocket"
 
 /* signal term handler */
 static void sigterm_handler(int signo) {
     LOGD(LOG_TAG, "handle signal: %d ", signo);
 }
 
-void *connectThread(void *arg) {
-    int ret;
-    int socketID = *(int *) arg;
-    if (socketID < 0) {
-        LOGE(LOG_TAG, "socketID is %d", socketID);
-        return NULL;
-    }
-    char buf2[512] = {0};
-    ret = read(socketID, buf2, sizeof(buf2));
-    if (ret < 0) {
-        LOGE(LOG_TAG, "recived failed");
-        return NULL;
-    }
-    LOGI(LOG_TAG, "c server recived: %s", buf2);
-    char buffer[] = {"this message from c server "};
-    ret = write(socketID, buffer, strlen(buffer));
-    if (ret < 0) {
-        LOGE(LOG_TAG, "write failed");
-        return NULL;
-    }
-    close(socketID);
-    return NULL;
+int create_socket() {
+    /* delete the socket file */
+    unlink(PATH);
 
+    /* create a socket */
+    int server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    struct sockaddr_un server_addr;
+    server_addr.sun_family = AF_UNIX;
+    strcpy(server_addr.sun_path, PATH);
+
+    /* bind with the local file */
+    if(bind(server_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
+        LOGE(LOG_TAG, "binder error!");
+        return -1;
+    }
+
+    /* listen */
+    listen(server_sockfd, 5);
+
+    char ch[1024];
+    int client_sockfd;
+    struct sockaddr_un client_addr;
+    socklen_t len = sizeof(client_addr);
+    while (1) {
+        LOGD(LOG_TAG, "server waiting:");
+
+        /* accept a connection */
+        client_sockfd = accept(server_sockfd, (struct sockaddr *) &client_addr, &len);
+
+        /* exchange data */
+        read(client_sockfd, &ch, 1024);
+        LOGD(LOG_TAG, "get message from client: %s", ch);
+        write(client_sockfd, &ch, strlen(ch));
+
+        /* close the socket */
+        close(client_sockfd);
+    }
 }
-
-//int create_socket() {
-//    int ret;
-//    int serverID = socket_local_server(PATH, ANDROID_SOCKET_NAMESPACE_ABSTRACT, SOCK_STREAM);
-//    if (serverID < 0) {
-//        LOGE(LOG_TAG, "socket_local_server failed :%d\n", serverID);
-//        return serverID;
-//    }
-//    int socketID;
-//    pthread_t tid;
-//    while ((socketID = accept(serverID, NULL, NULL)) >= 0) {
-//        ret = pthread_create(&tid, NULL, connectThread, (void *) &socketID);
-//        if (ret != 0) {
-//            LOGE(LOG_TAG, "error create thread:%s\n", strerror(ret));
-//            exit(1);
-//        }
-//    }
-//    return ret;
-//}
 
 int main(int argc, char *argv[]) {
 
@@ -75,7 +73,7 @@ int main(int argc, char *argv[]) {
     /* add signal */
     signal(SIGTERM, sigterm_handler);
 
-    //create_socket();
+    create_socket();
 
 //    while (1) {
 //        LOGI(LOG_TAG, "=========== daemon running ======");
