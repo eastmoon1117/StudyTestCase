@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.jared.virtualappdemo.proxy.TestProxy;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -18,5 +20,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        TestProxy.NoProxy();
+        TestProxy.StaticProxy();
+        TestProxy.DynamicProxy();
     }
 }
