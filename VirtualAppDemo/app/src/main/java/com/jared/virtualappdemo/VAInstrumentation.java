@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 
 /**
  * Created by jared on 2018/2/23.
@@ -30,6 +31,7 @@ public class VAInstrumentation extends Instrumentation {
          * 启动Activity的时候会调用到这里
          */
         Log.d(TAG, "====== This is hook startActivity by eastmoon! =======");
+        ComponentsHandler.getInstance().markIntentIfNeeded(intent);
 
         ActivityResult result = realExecStartActivity(who, contextThread, token, target,
                 intent, requestCode, options);
@@ -55,5 +57,32 @@ public class VAInstrumentation extends Instrumentation {
         }
 
         return result;
+    }
+
+    @Override
+    public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        try {
+            cl.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            String targetClassName = intent.getStringExtra("target.activity");
+
+            Log.d(TAG, String.format("newActivity[%s : %s]", className, targetClassName));
+            if (targetClassName != null) {
+
+                Activity activity = mBase.newActivity(cl, targetClassName, intent);
+                activity.setIntent(intent);
+
+                try {
+                    // for 4.1+
+                    ReflectUtil.setField(ContextThemeWrapper.class, activity, "mResources", getContext().getResources());
+                } catch (Exception ignored) {
+                    // ignored.
+                }
+
+                return activity;
+            }
+        }
+
+        return mBase.newActivity(cl, className, intent);
     }
 }
