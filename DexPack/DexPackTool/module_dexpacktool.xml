@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_dexpacktool" default="compile.module.dexpacktool">
+  <dirname property="module.dexpacktool.basedir" file="${ant.file.module_dexpacktool}"/>
+  
+  <property name="module.jdk.home.dexpacktool" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.dexpacktool" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.dexpacktool" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.dexpacktool" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="dexpacktool.output.dir" value="${module.dexpacktool.basedir}/out/production/DexPackTool"/>
+  <property name="dexpacktool.testoutput.dir" value="${module.dexpacktool.basedir}/out/test/DexPackTool"/>
+  
+  <path id="dexpacktool.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="dexpacktool.module.production.classpath">
+    <path refid="${module.jdk.classpath.dexpacktool}"/>
+  </path>
+  
+  <path id="dexpacktool.runtime.production.module.classpath">
+    <pathelement location="${dexpacktool.output.dir}"/>
+  </path>
+  
+  <path id="dexpacktool.module.classpath">
+    <path refid="${module.jdk.classpath.dexpacktool}"/>
+    <pathelement location="${dexpacktool.output.dir}"/>
+  </path>
+  
+  <path id="dexpacktool.runtime.module.classpath">
+    <pathelement location="${dexpacktool.testoutput.dir}"/>
+    <pathelement location="${dexpacktool.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.dexpacktool">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.dexpacktool">
+    <patternset refid="excluded.from.module.dexpacktool"/>
+  </patternset>
+  
+  <path id="dexpacktool.module.sourcepath">
+    <dirset dir="${module.dexpacktool.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.dexpacktool" depends="compile.module.dexpacktool.production,compile.module.dexpacktool.tests" description="Compile module DexPackTool"/>
+  
+  <target name="compile.module.dexpacktool.production" depends="register.custom.compilers" description="Compile module DexPackTool; production classes">
+    <mkdir dir="${dexpacktool.output.dir}"/>
+    <javac2 destdir="${dexpacktool.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.dexpacktool}/javac">
+      <compilerarg line="${compiler.args.dexpacktool}"/>
+      <bootclasspath refid="dexpacktool.module.bootclasspath"/>
+      <classpath refid="dexpacktool.module.production.classpath"/>
+      <src refid="dexpacktool.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.dexpacktool"/>
+    </javac2>
+    
+    <copy todir="${dexpacktool.output.dir}">
+      <fileset dir="${module.dexpacktool.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.dexpacktool.tests" depends="register.custom.compilers,compile.module.dexpacktool.production" description="compile module DexPackTool; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.dexpacktool" description="cleanup module">
+    <delete dir="${dexpacktool.output.dir}"/>
+    <delete dir="${dexpacktool.testoutput.dir}"/>
+  </target>
+</project>
